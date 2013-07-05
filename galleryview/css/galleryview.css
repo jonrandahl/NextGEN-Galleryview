@@ -11,7 +11,7 @@
 /* IMPORTANT - Change '#myGallery' to the ID of your gallery list to prevent a flash of unstyled content */
 #myGallery { display: none; }
 
-.gv_galleryWrap { position: relative; background: #222; font-size: 10pt; }
+.gv_galleryWrap { position: relative; font-size: 10pt; }
 
 /* GALLERY DIV */
 .gv_gallery { overflow: hidden; position: relative;}
@@ -32,27 +32,25 @@
 .gv_panel { filter: inherit; position: absolute; top: 0; left: 0; overflow: hidden; z-index: 100; }
 .gv_panel img { position: absolute; }
 
-.gv_overlay { position: absolute; background: #222; color: white; z-index: 200; }
+.gv_overlay { position: absolute; z-index: 200; }
+
 .gv_showOverlay { 
 	position: absolute; 
 	width: 20px; 
-	height: 20px; 
-	background: url(themes/light/info.png) #222; 
+	height: 20px; 	 
 	cursor: pointer;
 	z-index: 200;
 }
-.gv_overlay h4 { color: white; margin: 1em; font-weight: bold; }
-.gv_overlay p { color: white; margin: 1em; }
+
+.gv_overlay h4 { margin: 1em; font-weight: bold; }
+.gv_overlay p { margin: 1em; }
 
 .gv_infobar {
-	background: #222;
 	padding: 0 0.5em;
 	line-height: 1.5em;
 	height: 1.5em;
 	font-size: 10pt;
 	font-weight: bold;
-	color: white;
-	
 	position: absolute;
 	bottom: 0;
 	right: 0;
@@ -61,7 +59,6 @@
 	z-index: 2000;
 	
 }
-
 
 /*************************************************/
 /**   FILMSTRIP STYLES							**/
@@ -92,26 +89,24 @@
 .gv_frame img { border: none; position: absolute; }
 
 /* FRAME CAPTION */
-.gv_frame .gv_caption { height: 14px; line-height: 14px; font-size: 10px; text-align: center; color:white; }
+.gv_frame .gv_caption { height: 14px; line-height: 14px; font-size: 10px; text-align: center; }
 
 /* CURRENT FRAME CAPTION */
 .gv_frame.current .gv_caption { }
 
 /* POINTER FOR CURRENT FRAME */
-.gv_pointer {
-	border-color: black;
-}
+.gv_pointer { border-color: black; }
 
 /* NAVIGATION BUTTONS */
 .gv_navWrap {
 	text-align: center;
 	position: absolute;
 }
+
 .gv_navPlay,
 .gv_navPause,
 .gv_navNext,
-.gv_navPrev {
-	
+.gv_navPrev {	
 	opacity: 0.3;
 	-moz-opacity: 0.3;
 	-khtml-opacity: 0.3;
@@ -132,6 +127,8 @@
 	filter:alpha(opacity=80);
 }
 
+.gv_panelNavPlay,
+.gv_panelNavPause,
 .gv_panelNavPrev,
 .gv_panelNavNext {
 	position: absolute;
@@ -143,6 +140,8 @@
 	z-index: 200;
 }
 
+.gv_panelNavPlay:hover,
+.gv_panelNavPause:hover,
 .gv_panelNavPrev:hover,
 .gv_panelNavNext:hover {
 	opacity: 0.9;
@@ -150,40 +149,28 @@
 	-khtml-opacity: 0.9;
 	filter:alpha(opacity=90);
 }
-
-.gv_navPlay {
-	height: 30px;
-	width: 30px;
-	cursor: pointer;
-	background: url(themes/light/play-big.png) top left no-repeat;
-}
-.gv_navPause {
-	height: 30px;
-	width: 30px;
-	cursor: pointer;
-	background: url(themes/light/pause-big.png) top left no-repeat;
-}
-.gv_navNext {
-	height: 20px;
-	width: 20px;
-	cursor: pointer;
-	background: url(themes/light/next.png) top left no-repeat;
-}
+.gv_panelNavPlay,
+.gv_panelNavPause,
+.gv_navPlay,
+.gv_navPause,
+.gv_navNext,
 .gv_navPrev {
-	height: 20px;
-	width: 20px;
+	height: 30px;
+	width: 30px;
 	cursor: pointer;
-	background: url(themes/light/prev.png) top right no-repeat;
+	background-position: center;
+	background-repeat: no-repeat;
 }
-.gv_panelNavNext {
-	height: 20px;
-	width: 20px;
-	cursor: pointer;
-	background: url(themes/light/panel-next.png) top left no-repeat;
-}
+.gv_navPrev { background-position: top right; }
+
+
+.gv_panelNavNext,
 .gv_panelNavPrev {
 	height: 20px;
 	width: 20px;
 	cursor: pointer;
-	background: url(themes/light/panel-prev.png) top right no-repeat;
+	background-position: center;
+	background-repeat: no-repeat;
 }
+.gv_panelNavPrev { background-position: top right; }
+
