@@ -14,6 +14,7 @@
 // Courtesy of Douglas Crockford
 if (typeof Object.create !== 'function') {
     Object.create = function (o) {
+      "use strict";
         function F() {}
         F.prototype = o;
         return new F();
@@ -21,6 +22,8 @@ if (typeof Object.create !== 'function') {
 }
 
 (function ($) {
+	"use strict";
+	
 	// custom image object
 	var gvImage = function (img) {
 
@@ -55,7 +58,7 @@ if (typeof Object.create !== 'function') {
 		},
 		outerWidth: function(elem) {
 			return 	this.innerWidth(elem) + 
-					this.extraWidth(elem);
+              		this.extraWidth(elem);
 		},
 		extraWidth: function(elem) {
 			return	this.getInt(elem.css('paddingLeft')) +
@@ -89,8 +92,8 @@ if (typeof Object.create !== 'function') {
 			'img.gv_image',		'.gv_infobar',		'.gv_filmstripWrap',	'.gv_filmstrip',
 			'.gv_frame',		'.gv_thumbnail', 	'.gv_caption', 			'img.gv_thumb',
 			'.gv_navWrap',		'.gv_navNext',		'.gv_navPrev',			'.gv_navPlay',
-			'.gv_panelNavNext',	'.gv_panelNavPrev',	'.gv_overlay',			'.gv_showOverlay',
-			'.gv_imageStore'
+			'.gv_panelNavNext',	'.gv_panelNavPrev',	'.gv_panelNavPlay',		'.gv_panelNavPause',
+			'.gv_overlay',		'.gv_showOverlay',	'.gv_imageStore'
 		],
 
 		// create a jQuery element and apply attributes
@@ -105,7 +108,8 @@ if (typeof Object.create !== 'function') {
 		getPos: function (el) {
 			var self = this,
 				dom = this.dom,
-				el = el[0],
+				//el = el[0],
+				el = el.eq0,
 				el_id = el.id,
 				left = 0,
 				top = 0,
@@ -117,7 +121,7 @@ if (typeof Object.create !== 'function') {
 				do {
 					left += el.offsetLeft;
 					top += el.offsetTop;
-				} while (el = el.offsetParent);
+				} while (el == el.offsetParent);
 			}
 
 			//If we want the position of the gallery itself, return it
@@ -231,7 +235,9 @@ if (typeof Object.create !== 'function') {
 				height: gv.outerHeight(dom.gv_panel)
 			});
 			dom.gv_overlay.css({
-				width: this.opts.panel_width
+				width: this.opts.panel_width,
+				backgroundColor: this.opts.theme_background, 
+				color: this.opts.theme_text
 			});
 
 
@@ -323,9 +329,10 @@ if (typeof Object.create !== 'function') {
 			}
 
 			dom.gv_galleryWrap.css({
+					backgroundColor: this.opts.theme_background,
+					//padding: this.opts.frame_gap,
 					width: gv.outerWidth(dom.gv_gallery),
-					height: gv.outerHeight(dom.gv_gallery),
-					padding: this.opts.frame_gap
+					height: gv.outerHeight(dom.gv_gallery)
 			});
 		},
 
@@ -355,8 +362,11 @@ if (typeof Object.create !== 'function') {
 				fsHorz = Math.floor((gv.outerWidth(dom.gv_panelWrap) - gv.outerWidth(dom.gv_filmstripWrap)) / 2);
 			}
 
-			dom.gv_panelNavNext.css({ top: (gv.outerHeight(dom.gv_panel) - gv.outerHeight(dom.gv_panelNavNext)) / 2, right: 10 });
-			dom.gv_panelNavPrev.css({ top: (gv.outerHeight(dom.gv_panel) - gv.outerHeight(dom.gv_panelNavPrev)) / 2, left: 10 });
+			dom.gv_panelNavNext.css({ backgroundImage: 'url(' + this.themePath + '/panel-next-bigger.png)', top: (gv.outerHeight(dom.gv_panel) - gv.outerHeight(dom.gv_panelNavNext)) / 2, right: 20 });
+			dom.gv_panelNavPrev.css({ backgroundImage: 'url(' + this.themePath + '/panel-prev-bigger.png)', top: (gv.outerHeight(dom.gv_panel) - gv.outerHeight(dom.gv_panelNavPrev)) / 2, left: 20 });
+			if (this.opts.enable_slideshow) {
+				dom.gv_panelNavPlay.css({ backgroundImage: 'url(' + this.themePath + '/play-bigger.png)', top: (gv.outerHeight(dom.gv_panel) - gv.outerHeight(dom.gv_panelNavPlay)) / 2, left: '50%', marginLeft: -57 });
+			}
 
 			// pin elements to gallery corners according to filmstrip position
 			switch(this.opts.filmstrip_position) {
@@ -387,10 +397,10 @@ if (typeof Object.create !== 'function') {
 
 			if(this.opts.overlay_position === 'top') {
 				dom.gv_overlay.css({ top: 0, left: -99999 });
-				dom.gv_showOverlay.css({ top: 0, left: 0 });
+				dom.gv_showOverlay.css({ top: 0, left: 0, backgroundImage: 'url(' + this.themePath + '/info.png)', backgroundColor: this.opts.theme_background });
 			} else {
 				dom.gv_overlay.css({ bottom: 0, left: -99999 });
-				dom.gv_showOverlay.css({ bottom: 0, left: 0 });
+				dom.gv_showOverlay.css({ bottom: 0, left: 0, backgroundImage: 'url(' + this.themePath + '/info.png)', backgroundColor: this.opts.theme_background });
 			}
 
 			if(create){
@@ -412,6 +422,8 @@ if (typeof Object.create !== 'function') {
 				if(this.opts.show_captions) { 
 					dom.gv_frame.append(dom.gv_caption);
 				}
+				dom.gv_caption.css('color', this.opts.theme_text);
+				
 				dom.gv_thumbnail.css('opacity',this.opts.frame_opacity);
 
 				dom.gv_thumbnail.bind({
@@ -532,6 +544,8 @@ if (typeof Object.create !== 'function') {
 			if(this.opts.show_filmstrip) {
 				this.buildFilmstrip(create);
 			}
+			
+			
 		},
 
 		showInfoBar: function() {
@@ -539,11 +553,15 @@ if (typeof Object.create !== 'function') {
 			var self = this,
 				dom = this.dom;
 
-			dom.gv_infobar.stop().stopTime('hideInfoBar_' + self.id).html((this.iterator+1) + ' of ' + this.numImages).show().css('opacity',this.opts.infobar_opacity);
+			dom.gv_infobar.stop().stopTime('hideInfoBar_' + self.id).html((this.iterator+1) + ' of ' + this.numImages).show().css({
+				color: this.opts.theme_text,
+				backgroundColor: this.opts.theme_background,
+				opacity: this.opts.infobar_opacity
+			});
 
 			dom.gv_infobar.oneTime(2000 + this.opts.transition_speed,'hideInfoBar_' + self.id,function() {
-					dom.gv_infobar.fadeOut(1000);
-				});
+				dom.gv_infobar.fadeOut(1000);
+			});
 		},
 
 		initImages: function() {
@@ -572,7 +590,6 @@ if (typeof Object.create !== 'function') {
 						if(!self.opts.panel_can_upscale_image && gvImage.scale[parentType]>1){
 							gvImage.scale[parentType]=1;
 						}
-
 
 						widthOffset = Math.round((gv.innerWidth(parent) - (width * gvImage.scale[parentType])) / 2);
 						heightOffset = Math.round((gv.innerHeight(parent) - (height * gvImage.scale[parentType])) / 2);	
@@ -608,28 +625,16 @@ if (typeof Object.create !== 'function') {
 				// store eventual image container as data property
 				// append to temporary storage element and set src
 				if(self.opts.show_panels) {
-					img.clone(true)
-						.data('parent',{type:'gv_panels',index:i})
-						.appendTo(dom.gv_imageStore)
-						.attr('src',gvImage.src.panel);
+					img.clone(true).data('parent',{type:'gv_panels',index:i}).appendTo(dom.gv_imageStore).attr('src',gvImage.src.panel);
 				}
 
 				if(self.opts.show_filmstrip) {
-					img.clone(true)
-						.data('parent',{type:'gv_thumbnails',index:i})
-						.appendTo(dom.gv_imageStore)
-						.attr('src',gvImage.src.frame);
+					img.clone(true).data('parent',{type:'gv_thumbnails',index:i}).appendTo(dom.gv_imageStore).attr('src',gvImage.src.frame);
 
 					if(dom.gv_frames.length > dom.gv_panels.length) {
-						img.clone(true)
-							.data('parent',{type:'gv_thumbnails',index:i+self.numImages})
-							.appendTo(dom.gv_imageStore)
-							.attr('src',gvImage.src.frame);
+						img.clone(true).data('parent',{type:'gv_thumbnails',index:i+self.numImages}).appendTo(dom.gv_imageStore).attr('src',gvImage.src.frame);
 
-						img.clone(true)
-							.data('parent',{type:'gv_thumbnails',index:i+self.numImages+self.numImages})
-							.appendTo(dom.gv_imageStore)
-							.attr('src',gvImage.src.frame);
+						img.clone(true).data('parent',{type:'gv_thumbnails',index:i+self.numImages+self.numImages}).appendTo(dom.gv_imageStore).attr('src',gvImage.src.frame);
 					}
 				}
 			});
@@ -637,7 +642,7 @@ if (typeof Object.create !== 'function') {
 
 		showNext: function() {
 			this.navAction = 'next';
-			this.showItem(this.frameIterator+1);
+			this.showItem(this.frameIterator+1);			
 		},
 
 		showPrev: function() {
@@ -739,13 +744,13 @@ if (typeof Object.create !== 'function') {
 			var self = this,
 				dom = this.dom;
 
+			dom.gv_overlay.html('<h4>'+self.gvImages[i].attrs.title+'</h4><p>'+self.gvImages[i].attrs.description+'</p>');
+			
 			if(this.overlayVisible) {
 				this.hideOverlay(null,function(){
-					dom.gv_overlay.html('<h4>'+self.gvImages[i].attrs.title+'</h4><p>'+self.gvImages[i].attrs.description+'</p>');
 					self.showOverlay();
 				});
 			} else {
-				dom.gv_overlay.html('<h4>'+self.gvImages[i].attrs.title+'</h4><p>'+self.gvImages[i].attrs.description+'</p>');
 				dom.gv_overlay.css(this.opts.overlay_position,-1 * dom.gv_overlay.outerHeight());
 			}
 
@@ -791,6 +796,7 @@ if (typeof Object.create !== 'function') {
 
 			endButton[this.opts.overlay_position] = dom.gv_overlay.outerHeight();
 
+			dom.gv_overlay.children('h4,p').css('color', this.opts.theme_text);
 			dom.gv_overlay.css(startOverlay);
 			dom.gv_overlay.animate(endOverlay,{ duration: speed, easing: 'swing' });
 			dom.gv_showOverlay.animate(endButton,{ duration: speed, easing: 'swing' });
@@ -877,10 +883,15 @@ if (typeof Object.create !== 'function') {
 			var self = this,
 				dom = this.dom;
 
-			if(!self.opts.enable_slideshow) { return; }
-
+			if(!self.opts.enable_slideshow) { return; }			
+			
 			if(changeIcon) {
+				dom.gv_panelNavPlay.removeClass('gv_panelNavPlay').addClass('gv_panelNavPause');
+				dom.gv_panelNavPlay.css('backgroundImage', 'url(' + this.themePath + '/pause-bigger.png)');
+				dom.gv_panelNavPlay.hide();	
+				
 				dom.gv_navPlay.removeClass('gv_navPlay').addClass('gv_navPause');
+				dom.gv_navPlay.css('backgroundImage', 'url(' + this.themePath + '/pause-big.png)');
 			}
 			this.playing = true;
 			dom.gv_galleryWrap.everyTime(this.opts.transition_interval,'slideshow_'+this.id,function(){ self.showNext(); });
@@ -889,9 +900,14 @@ if (typeof Object.create !== 'function') {
 		stopSlideshow: function(changeIcon) {
 			var self = this,
 				dom = this.dom;
-
+	
 			if(changeIcon) {
+				dom.gv_panelNavPlay.removeClass('gv_panelNavPause').addClass('gv_panelNavPlay');
+				dom.gv_panelNavPlay.css('backgroundImage', 'url(' + this.themePath + '/play-bigger.png)');
+				dom.gv_panelNavPlay.show();	
+
 				dom.gv_navPlay.removeClass('gv_navPause').addClass('gv_navPlay');
+				dom.gv_navPlay.css('backgroundImage', 'url(' + this.themePath + '/play-big.png)');
 			}
 			this.playing = false;
 			dom.gv_galleryWrap.stopTime('slideshow_'+this.id);
@@ -924,8 +940,8 @@ if (typeof Object.create !== 'function') {
 
 						image.css('cursor','url(http://www.google.com/intl/en_ALL/mapfiles/closedhand.cur), n-resize');
 
-						if(new_top > 0) new_top = 0;
-						if(new_left > 0) new_left = 0;
+						if(new_top > 0){ new_top = 0;}
+						if(new_left > 0){ new_left = 0;}
 
 						if(new_top < (-1 * (gv.outerHeight(image) - gv.innerHeight(dom.gv_panel)))) { new_top = -1 * (gv.outerHeight(image) - gv.innerHeight(dom.gv_panel)); }
 						if(new_left < (-1 * (gv.outerWidth(image) - gv.innerWidth(dom.gv_panel)))) { new_left = -1 * (gv.outerWidth(image) - gv.innerWidth(dom.gv_panel)); }
@@ -936,14 +952,16 @@ if (typeof Object.create !== 'function') {
 						image.css('cursor','url(http://www.google.com/intl/en_ALL/mapfiles/openhand.cur), n-resize');	
 					}
 				});
-			} else {
+//			} else {
 
 			}
 		},
 
 		bindActions: function() {
 			var self = this,
-				dom = this.dom;
+				dom = this.dom,
+				n = null,
+				p = null;
 
 			dom.gv_showOverlay.bind('click.galleryview',function(){
 				if(self.overlayVisible) {
@@ -959,20 +977,36 @@ if (typeof Object.create !== 'function') {
 					self.showNext();
 				} else if(el.hasClass('gv_navPrev')) {
 					self.showPrev();
+					self.hidePanelPlay();
+					setTimeout(function(){self.showPanelPlay()}, 5000);
 				} else if(el.hasClass('gv_navPlay')) {
 					self.startSlideshow(true);
 				} else if(el.hasClass('gv_navPause')) {
 					self.stopSlideshow(true);
+				} else if(el.hasClass('gv_panelNavPlay')) {
+					self.startSlideshow(true);
+				} else if(el.hasClass('gv_panelNavPause')) {
+					self.stopSlideshow(true);
 				}
 				return false;
 			});
-
+			
+			dom.gv_panelNavPlay.bind('click.galleryview', function(){
+				$(this).hasClass('gv_panelNavPlay') ? self.startSlideshow(true) : self.stopSlideshow(true);
+				return false;
+			});
 			dom.gv_panelNavNext.bind('click.galleryview',function(){ 
 				self.showNext(); 
+				self.hidePanelPlay();
+				clearTimeout(n);
+				n=setTimeout(function(){self.showPanelPlay()}, 5000);
 				return false;
 			});
 			dom.gv_panelNavPrev.bind('click.galleryview',function(){
 				self.showPrev(); 
+				self.hidePanelPlay();
+				clearTimeout(p);
+				p=setTimeout(function(){self.showPanelPlay()}, 5000);
 				return false;
 			});
 
@@ -987,8 +1021,10 @@ if (typeof Object.create !== 'function') {
 
 			dom.gv_panelWrap.bind('mouseover.galleryview',function(){
 				self.showPanelNav();
+				self.showPanelPlay();
 			}).bind('mouseout.galleryview',function(){
-				self.hidePanelNav();
+				self.hidePanelNav();				
+				if(self.playing) self.hidePanelPlay();
 			});
 		},
 
@@ -997,6 +1033,7 @@ if (typeof Object.create !== 'function') {
 				dom = this.dom;
 
 			dom.gv_showOverlay.unbind('click.galleryview');
+			dom.gv_panelNavPlay.unbind('click.galleryview');
 			dom.gv_panelNavNext.unbind('click.galleryview');
 			dom.gv_panelNavPrev.unbind('click.galleryview');
 			dom.gv_navWrap.undelegate('div','click.galleryview');
@@ -1006,9 +1043,10 @@ if (typeof Object.create !== 'function') {
 		showPanelNav: function() {
 			var self = this,
 				dom = this.dom;
-
+				
 			dom.gv_panelNavNext.show();
 			dom.gv_panelNavPrev.show();	
+			//dom.gv_panelNavPlay.show();
 		},
 
 		hidePanelNav: function() {
@@ -1017,8 +1055,23 @@ if (typeof Object.create !== 'function') {
 
 			dom.gv_panelNavNext.hide();
 			dom.gv_panelNavPrev.hide();	
+			//dom.gv_panelNavPlay.hide();
 		},
+		
+		showPanelPlay: function() {
+			var self = this,
+				dom = this.dom;
+				
+			dom.gv_panelNavPlay.show();			
+		},
+		
+		hidePanelPlay: function() {
+			var self = this,
+				dom = this.dom;
 
+			dom.gv_panelNavPlay.hide();
+		},
+		
 		init: function(options,el) {
 			var self = this,
 				dom = this.dom = {};
@@ -1034,6 +1087,7 @@ if (typeof Object.create !== 'function') {
 			this.isMouseDown = false;
 			this.mouse = { x: 0, y: 0 };
 			this.filmstripOrientation = (this.opts.filmstrip_position === 'top' || this.opts.filmstrip_position === 'bottom') ? 'horizontal' : 'vertical';
+			this.themePath = this.opts.theme_base + '/galleryview/css/themes/' + this.opts.theme_folder;
 
 			$(document).bind('mousemove.galleryview',function(e) {
 				self.mouse = {x: e.pageX, y: e.pageY};	   
@@ -1058,19 +1112,25 @@ if (typeof Object.create !== 'function') {
 			dom.gv_frame.addClass('gv_frame-loading');
 
 			// nest DOM elements
-			dom.gv_galleryWrap.hide().append(dom.gv_gallery);
+			dom.gv_galleryWrap.hide().append(dom.gv_gallery).addClass(this.opts.theme_folder);
 
 			if(this.opts.show_panels) {
 				dom.gv_gallery.append(dom.gv_panelWrap);
 				if(this.opts.show_panel_nav) {
-					dom.gv_panelWrap.append(dom.gv_panelNavNext,dom.gv_panelNavPrev);
+					dom.gv_panelWrap.append(
+						dom.gv_panelNavNext,
+						(this.opts.enable_slideshow)?dom.gv_panelNavPlay:$('<span></span>'),
+						dom.gv_panelNavPrev
+					);
 				}
+				
 				if(this.opts.show_infobar) {
 					dom.gv_panelWrap.append(dom.gv_infobar);
 				}
 			}
 
 			if(this.opts.show_filmstrip) {
+			
 				dom.gv_gallery.append(
 					dom.gv_filmstripWrap.append(
 						dom.gv_filmstrip
@@ -1081,10 +1141,15 @@ if (typeof Object.create !== 'function') {
 					dom.gv_gallery.append(
 						dom.gv_navWrap.append(
 							dom.gv_navPrev,
-							(this.opts.enable_slideshow?dom.gv_navPlay:$('<span></span>')),
+							(this.opts.enable_slideshow)?dom.gv_navPlay:$('<span></span>'),
 							dom.gv_navNext
 						)
 					);
+					dom.gv_navPrev.css('backgroundImage', 'url(' + this.themePath + '/prev.png)');
+					dom.gv_navNext.css('backgroundImage', 'url(' + this.themePath + '/next.png)');
+					if (this.opts.enable_slideshow) {
+						dom.gv_navPlay.css('backgroundImage', 'url(' + this.themePath + '/play-big.png)');
+					}
 				}
 			}
 
@@ -1123,6 +1188,8 @@ if (typeof Object.create !== 'function') {
 
 			if(this.opts.autoplay) {
 				this.startSlideshow(true);
+			} else {
+				this.showPanelPlay();
 			}
 
 			this.updateOverlay(this.iterator);
@@ -1191,43 +1258,49 @@ if (typeof Object.create !== 'function') {
 	$.fn.galleryView.defaults = {
 
 		// General Options
-		transition_speed: 1000, 		//INT - duration of panel/frame transition (in milliseconds)
-		transition_interval: 5000, 		//INT - delay between panel/frame transitions (in milliseconds)
-		easing: 'swing', 				//STRING - easing method to use for animations (jQuery provides 'swing' or 'linear', more available with jQuery UI or Easing plugin)
+		transition_speed: 1000,						//INT - duration of panel/frame transition (in milliseconds)
+		transition_interval: 5000, 					//INT - delay between panel/frame transitions (in milliseconds)
+		easing: 'swing', 									//STRING - easing method to use for animations (jQuery provides 'swing' or 'linear', more available with jQuery UI or Easing plugin)
+
+		// Theme Options
+		theme_base: 'nextgen_galleryview2',			//STRING - default path for the plug-in directory [passed in via the individual calls]
+		theme_folder: 'light',							//STRING - 'light' or 'dark' - theme for gallery
+		theme_background:	'#fff',					//STRING - 3 digit hexidecimal background color
+		theme_text: '#222',								//STRING - 3 digit hexidecimal text color
 
 		// Panel Options
-		show_panels: true, 				//BOOLEAN - flag to show or hide panel portion of gallery
-		show_panel_nav: true, 			//BOOLEAN - flag to show or hide panel navigation buttons
-		enable_overlays: false, 		//BOOLEAN - flag to enable or disable panel overlays
-		show_overlays: false,			//BOOLEAN - flag to show or hide panel overlays on page load (if overlays are enabled) 
-		panel_width: 800, 				//INT - width of gallery panel (in pixels)
-		panel_height: 400, 				//INT - height of gallery panel (in pixels)
-		panel_animation: 'fade', 		//STRING - animation method for panel transitions (crossfade,fade,slide,none)
-		panel_scale: 'crop', 			//STRING - cropping option for panel images (crop = scale image and fit to aspect ratio determined by panel_width and panel_height, fit = scale image and preserve original aspect ratio)
-		overlay_position: 'bottom', 	//STRING - position of panel overlay (bottom, top)
-		pan_images: false,				//BOOLEAN - flag to allow user to grab/drag oversized images within gallery
-		pan_style: 'drag',				//STRING - panning method (drag = user clicks and drags image to pan, track = image automatically pans based on mouse position
-		pan_smoothness: 15,				//INT - determines smoothness of tracking pan animation (higher number = smoother)
+		show_panels: true,							//BOOLEAN - flag to show or hide panel portion of gallery
+		show_panel_nav: true,						//BOOLEAN - flag to show or hide panel navigation buttons
+		enable_overlays: false,						//BOOLEAN - flag to enable or disable panel overlays
+		show_overlays: false,							//BOOLEAN - flag to show or hide panel overlays on page load (if overlays are enabled) 
+		panel_width: 800,								//INT - width of gallery panel (in pixels)
+		panel_height: 400,								//INT - height of gallery panel (in pixels)
+		panel_animation: 'fade',						//STRING - animation method for panel transitions (crossfade,fade,slide,none)
+		panel_scale: 'crop',							//STRING - cropping option for panel images (crop = scale image and fit to aspect ratio determined by panel_width and panel_height, fit = scale image and preserve original aspect ratio)
+		overlay_position: 'bottom',					//STRING - position of panel overlay (bottom, top)
+		pan_images: false,							//BOOLEAN - flag to allow user to grab/drag oversized images within gallery
+		pan_style: 'drag',								//STRING - panning method (drag = user clicks and drags image to pan, track = image automatically pans based on mouse position
+		pan_smoothness: 15,							//INT - determines smoothness of tracking pan animation (higher number = smoother)
 
 		// Filmstrip Options
-		start_frame: 1, 				//INT - index of panel/frame to show first when gallery loads
-		show_filmstrip: true, 			//BOOLEAN - flag to show or hide filmstrip portion of gallery
-		show_filmstrip_nav: true, 		//BOOLEAN - flag indicating whether to display navigation buttons
-		enable_slideshow: true,			//BOOLEAN - flag indicating whether to display slideshow play/pause button
-		autoplay: false,				//BOOLEAN - flag to start slideshow on gallery load
-		show_captions: false, 			//BOOLEAN - flag to show or hide frame captions	
-		filmstrip_size: 3, 				//INT - number of frames to show in filmstrip-only gallery
-		filmstrip_style: 'scroll', 		//STRING - type of filmstrip to use (scroll = display one line of frames, scroll filmstrip if necessary, showall = display multiple rows of frames if necessary)
-		filmstrip_position: 'bottom', 	//STRING - position of filmstrip within gallery (bottom, top, left, right)
-		frame_width: 80, 				//INT - width of filmstrip frames (in pixels)
-		frame_height: 40, 				//INT - width of filmstrip frames (in pixels)
-		frame_opacity: 0.4, 			//FLOAT - transparency of non-active frames (1.0 = opaque, 0.0 = transparent)
-		frame_scale: 'crop', 			//STRING - cropping option for filmstrip images (same as above)
-		frame_gap: 5, 					//INT - spacing between frames within filmstrip (in pixels)
+		start_frame: 1,									//INT - index of panel/frame to show first when gallery loads
+		show_filmstrip: true,							//BOOLEAN - flag to show or hide filmstrip portion of gallery
+		show_filmstrip_nav: true,					//BOOLEAN - flag indicating whether to display navigation buttons
+		enable_slideshow: true,						//BOOLEAN - flag indicating whether to display slideshow play/pause button
+		autoplay: false,									//BOOLEAN - flag to start slideshow on gallery load
+		show_captions: false,						//BOOLEAN - flag to show or hide frame captions	
+		filmstrip_size: 3,								//INT - number of frames to show in filmstrip-only gallery
+		filmstrip_style: 'scroll',						//STRING - type of filmstrip to use (scroll = display one line of frames, scroll filmstrip if necessary, showall = display multiple rows of frames if necessary)
+		filmstrip_position: 'bottom',					//STRING - position of filmstrip within gallery (bottom, top, left, right)
+		frame_width: 80,								//INT - width of filmstrip frames (in pixels)
+		frame_height: 40,								//INT - width of filmstrip frames (in pixels)
+		frame_opacity: 0.4,							//FLOAT - transparency of non-active frames (1.0 = opaque, 0.0 = transparent)
+		frame_scale: 'crop',							//STRING - cropping option for filmstrip images (same as above)
+		frame_gap: 5,									//INT - spacing between frames within filmstrip (in pixels)
 
 		// Info Bar Options
-		show_infobar: true,				//BOOLEAN - flag to show or hide infobar
-		infobar_opacity: 1,				//FLOAT - transparency for info bar
+		show_infobar: true,							//BOOLEAN - flag to show or hide infobar
+		infobar_opacity: 1,								//FLOAT - transparency for info bar
 
 		panel_can_upscale_image: true
 	};
